@@ -41,13 +41,14 @@ def get_soup_prop(soup, prop):
     return prop_soup.text.strip() if prop_soup else ''
 
 
-def parse_page(html):
-    # Parse html
-    soup = load_html(html)
-
+def get_new_vehicles(soup):
     # Parse new vehicles section
+    new_vehicles_section_soup = soup.find('section', class_='new-vehicles')
+    if not new_vehicles_section_soup:
+        return []
+
     new_vehicles = []
-    new_vehicles_soup = soup.find('section', class_='new-vehicles').find_all('div', class_="new-vehicle")
+    new_vehicles_soup = new_vehicles_section_soup.find_all('div', class_="new-vehicle")
     for new_vehicle_soup in new_vehicles_soup:
         link_soup = new_vehicle_soup.find('a')
         vehicle = {
@@ -67,7 +68,10 @@ def parse_page(html):
         specs_soup = new_vehicle_soup.find('table', class_="specs-table")
         vehicle['specs'] = get_specs(specs_soup)
 
+    return new_vehicles
 
+
+def get_used_vehicles(soup):
     # Parse search section
     used_vehicles_soup = soup.find('section', class_='search-results').find_all('div', {'itemtype': 'http://schema.org/Offer'})
     used_vehicles = []
@@ -92,6 +96,14 @@ def parse_page(html):
         specs_soup = used_vehicle_soup.find("table", class_="used-specs-table")
         vehicle['specs'] = get_specs(specs_soup)
 
+    return used_vehicles
+
+
+def parse_page(html):
+    # Parse html
+    soup = load_html(html)
+    new_vehicles = get_new_vehicles(soup)
+    used_vehicles = get_used_vehicles(soup)
     return new_vehicles, used_vehicles
 
 
